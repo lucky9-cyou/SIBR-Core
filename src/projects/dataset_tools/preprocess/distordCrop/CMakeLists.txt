@@ -17,7 +17,7 @@ file(GLOB SOURCES "*.cpp" "*.h" "*.hpp")
 add_executable(${PROJECT_NAME} ${SOURCES})
 
 target_link_libraries(${PROJECT_NAME}
-    ${Boost_LIBRARIES}
+    Boost::Boost
     OpenMP::OpenMP_CXX
     sibr_system
     sibr_graphics

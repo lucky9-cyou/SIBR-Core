@@ -20,11 +20,10 @@ source_group("Resources Files" FILES ${RESOURCES})
 add_executable(${PROJECT_NAME} ${SOURCES})
 target_link_libraries(${PROJECT_NAME}
 
-	${Boost_LIBRARIES}
-	${ASSIMP_LIBRARIES}
-	${GLEW_LIBRARIES}
-	${OPENGL_LIBRARIES}
-	${OpenCV_LIBRARIES}
+	Boost::Boost
+	assimp::assimp
+	GLEW::GLEW
+	opengl::opengl
 	OpenMP::OpenMP_CXX
 	sibr_view
 	sibr_assets

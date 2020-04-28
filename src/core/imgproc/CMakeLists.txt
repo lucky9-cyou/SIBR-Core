@@ -21,10 +21,9 @@ include_directories(
 	${mrf_INCLUDE_DIRS}
 )
 target_link_libraries(${PROJECT_NAME}
-	${Boost_LIBRARIES}
-	${OpenCV_LIBRARIES}
+	Boost::Boost
 	OpenMP::OpenMP_CXX
-	glfw3
+	glfw::glfw
 	mrf
 	sibr_system
 	sibr_graphics

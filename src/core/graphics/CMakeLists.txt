@@ -24,14 +24,18 @@ include_directories(
 	${imgui_INCLUDE_DIRS}
 )
 target_link_libraries(${PROJECT_NAME}
-	${Boost_LIBRARIES}
-	${ASSIMP_LIBRARIES}
-	${GLEW_LIBRARIES}
-	${OPENGL_LIBRARIES}
-	${OpenCV_LIBRARIES}
+	Boost::Boost
+	assimp::assimp
+	GLEW::GLEW
+	opengl::opengl
+	opencv::core
+	opencv::imgproc
+	opencv::imgcodecs
+	opencv::videoio
+	opencv::highgui
 	OpenMP::OpenMP_CXX
 	imgui
-	glfw3
+	glfw::glfw
 	sibr_system
 )
 

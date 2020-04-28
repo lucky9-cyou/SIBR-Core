@@ -22,7 +22,7 @@ include_directories(
 	${rapidxml_INCLUDE_DIRS}
 )
 target_link_libraries(${PROJECT_NAME}
-	${Boost_LIBRARIES}
+	Boost::Boost
 	picojson
 	rapidxml
 	nfd

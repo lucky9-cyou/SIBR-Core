@@ -24,11 +24,11 @@ include_directories(
     ${xatlas_INCLUDE_DIRS}
 )
 target_link_libraries(${PROJECT_NAME}
-    ${Boost_LIBRARIES}
-    ${ASSIMP_LIBRARIES}
-    ${GLEW_LIBRARIES}
-    ${OPENGL_LIBRARIES}
-    ${OpenCV_LIBRARIES}
+    Boost::Boost
+    assimp::assimp
+    GLEW::GLEW
+    opengl::opengl
+    opencv::imgcodecs
 	OpenMP::OpenMP_CXX
     sibr_graphics
     xatlas

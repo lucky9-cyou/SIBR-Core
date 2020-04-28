@@ -25,12 +25,11 @@ add_library(${PROJECT_NAME} SHARED ${SOURCES})
 
 include_directories(${Boost_INCLUDE_DIRS} .)
 target_link_libraries(${PROJECT_NAME}
-	${Boost_LIBRARIES}
-	${ASSIMP_LIBRARIES}
-	${GLEW_LIBRARIES}
-	${OPENGL_LIBRARIES}
-	${OpenCV_LIBRARIES}
-	glfw3
+	Boost::Boost
+	assimp::assimp
+	GLEW::GLEW
+	opengl::opengl
+	glfw::glfw
 	sibr_system
 	sibr_view
 	sibr_assets

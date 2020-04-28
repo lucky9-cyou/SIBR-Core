@@ -14,7 +14,7 @@ PROJECT(sibr_projects)
 
 ## Check the cmake version
 set(REQUIRED_VERSION "3.16.0")
-set(CHECKED_VERSION "3.18.4")
+set(CHECKED_VERSION "3.19.1")
 if (CMAKE_VERSION VERSION_LESS REQUIRED_VERSION)
     message(WARNING "Deprecated version of cmake. Please update to at least ${REQUIRED_VERSION} (${CHECKED_VERSION} recommended).")
 elseif (CMAKE_VERSION VERSION_GREATER CHECKED_VERSION)
@@ -40,7 +40,7 @@ include(CheckCXXCompilerFlag)
 get_filename_component(currentBuildTool ${CMAKE_BUILD_TOOL} NAME_WE)	# tool that can launch the native build system. returned value may be the full path
 if(${currentBuildTool} MATCHES "(msdev|devenv|nmake|MSBuild)")
     add_definitions(/W3 /DNOMINMAX /MP -D_USE_MATH_DEFINES)# /D_ITERATOR_DEBUG_LEVEL=1 because you need all external DLl to compile with this flag too
-    set(CMAKE_CONFIGURATION_TYPES "RelWithDebInfo;Release;Debug" CACHE STRING "" FORCE)
+    set(CMAKE_CONFIGURATION_TYPES "Release;RelWithDebInfo;Debug" CACHE STRING "" FORCE)
     set(CMAKE_CXX_STANDARD 14)
 	set(CMAKE_CXX_STANDARD_REQUIRED ON)
 	set(CMAKE_CXX_EXTENSIONS OFF)

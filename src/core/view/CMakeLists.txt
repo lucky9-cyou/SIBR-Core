@@ -29,12 +29,10 @@ file(GLOB SOURCES
 add_library(${PROJECT_NAME} SHARED ${SOURCES})
 
 include_directories(
-	${Boost_INCLUDE_DIRS}
 	${imgui_INCLUDE_DIRS}
 )
 target_link_libraries(${PROJECT_NAME}
-	${Boost_LIBRARIES}
-	${OpenCV_LIBRARIES}
+	Boost::Boost
 	OpenMP::OpenMP_CXX
 	imgui
 	sibr_graphics

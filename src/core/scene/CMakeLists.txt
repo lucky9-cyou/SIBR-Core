@@ -17,13 +17,11 @@ source_group("Source Files" FILES ${SOURCES})
 ## Specify target rules
 add_library(${PROJECT_NAME} SHARED ${SOURCES})
 
-include_directories(${Boost_INCLUDE_DIRS})
 target_link_libraries(${PROJECT_NAME}
-    ${Boost_LIBRARIES}
-    ${ASSIMP_LIBRARIES}
-    ${GLEW_LIBRARIES}
-    ${OPENGL_LIBRARIES}
-    ${OpenCV_LIBRARIES}
+    Boost::Boost
+    assimp::assimp
+    GLEW::GLEW
+    opengl::opengl
 	OpenMP::OpenMP_CXX
     sibr_assets
     sibr_graphics

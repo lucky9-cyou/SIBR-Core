@@ -192,8 +192,6 @@ endmacro()
 ##      [PLUGINS 				name 		[nameN ...] [PLUGIN_PATH_NAME currentPathName [FROM_REL_PATH matchDirFromCurrentPathName] [PLUGIN_PATH_DEST installDir] ]
 ##      [PLUGINS 				...]
 ##      [DIRS 					path 		[pathN ...] ]
-##		[TARGET_LIBRARIES  		filePath	[filePathN ...] ]
-##		[TARGET_PACKAGES   		packageName [packageNameN ...] ]
 ##		[COMPONENT				installComponentName]
 ##		[PLAUSIBLES_POSTFIX		Debug_postfix [MinSizeRel_postfix relWithDebInfo_postfix ...] ]
 ##      [VERBOSE]
@@ -212,9 +210,6 @@ endmacro()
 ##			PLUGIN_PATH_DEST	: [optional: default relative to executable directory] Where (full path to the install directory) we will install the plugin file (or file path)
 ##
 ## DIRS 			:	A list of directories to looking for dependencies
-## TARGET_LIBRARIES :	DEPRECATED (use TARGET flag instead) : The cmake content variables used for the target_link_libraries(<targetApp> ...)
-## TARGET_PACKAGES 	: 	DEPRECATED (use TARGET flag instead) : The cmake package names used for the findPackage(...) for your targetApp
-##						ADVICE: This flag add entries in cache (like: <packageName>_DIR), it could be useful to fill these variable!
 ## COMPONENT		:	(default to runtime) Is the component name associated to the installation
 ##						It is used when you want to install separatly some part of your projets (see install cmake doc)
 ## VERBOSE			: 	For debug or to get more informations in the output console
@@ -229,18 +224,6 @@ endmacro()
 ##			FROM_REL_PATH		plugins ## optional, used especially for keeping qt plugins tree structure
 ##          PLUGIN_PATH_DEST    ${CMAKE_INSTALL_PREFIX}/plugins ## (or relative path 'plugins' will be interpreted relative to installed executable)
 ##		DIRS				${CMAKE_CURRENT_BINARY_DIR} ${CMAKE_BINARY_DIR}
-##		TARGET_LIBRARIES	${OPENGL_LIBRARIES}         ## DEPRECATED (use TARGET flag instead)
-##							${GLEW_LIBRARIES}
-##							${GLUT_LIBRARIES}
-##							${Boost_LIBRARIES}
-##							${SuiteSparse_LIBRARIES}
-##							${CGAL_LIBRARIES}
-##		TARGET_PACKAGES		OPENGL                      ## DEPRECATED (use TARGET flag instead)
-##							GLEW
-##							GLUT
-##							CGAL
-##							Boost
-##							SuiteSparse
 ##	)
 ##
 ## For plugins part, it use our internal parse_arguments_multi.cmake
@@ -248,7 +231,7 @@ endmacro()
 function(install_runtime installedFilePathTargetAppToResolve)
     set(optionsArgs "VERBOSE")
     set(oneValueArgs "COMPONENT;INSTALL_FOLDER;CONFIG_TYPE")
-    set(multiValueArgs "DIRS;PLUGINS;TARGET_LIBRARIES;TARGET_PACKAGES;TARGET;PLAUSIBLES_POSTFIX")
+    set(multiValueArgs "DIRS;PLUGINS;TARGET;PLAUSIBLES_POSTFIX")
     cmake_parse_arguments(inst_run "${optionsArgs}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN} )
 
     if(IS_ABSOLUTE ${installedFilePathTargetAppToResolve})
@@ -263,25 +246,11 @@ function(install_runtime installedFilePathTargetAppToResolve)
 		set(inst_run_COMPONENT runtime)
 	endif()
 
-
-    ## Try to append as more possible as possible paths to find dependencies (deprecated since we can use target_properties to get back paths)
-    set(libPaths )
-	foreach(libraryFileName ${inst_run_TARGET_LIBRARIES})
-		if(IS_DIRECTORY "${libraryFileName}")
-			list(APPEND libPaths "${libraryFileName}")
-		else()
-			get_filename_component(libpath "${libraryFileName}" PATH)
-			if(EXISTS "${libpath}")
-				list(APPEND libPaths "${libpath}")
-			endif()
-		endif()
-	endforeach()
-
     ## This macro is used internaly here to recursilvely get path of LINK_LIBRARIES of each non imported target
     ## Typically if you have 2 internal dependencies between cmake targets, we want cmake to be able to get back path where are these dependencies
     macro(recurseDepList target)
         get_target_property(linkLibs ${target} LINK_LIBRARIES)
-        foreach(lib ${linkLibs})
+		foreach(lib ${linkLibs})
             string(FIND ${lib} ">" strId) ## cmake is using generator-expression?
 			if(TARGET ${lib})
 				## Skipping interface libraries as they're system ones
@@ -332,7 +301,10 @@ function(install_runtime installedFilePathTargetAppToResolve)
         if(targetLinkLibsPathList)
             list(REMOVE_DUPLICATES targetLinkLibsPathList)
         endif()
-    endmacro()
+	endmacro()
+	
+    set(libPaths )
+	list(APPEND libPaths ${CMAKE_PREFIX_PATH})
     if(inst_run_TARGET)
         recurseDepList(${inst_run_TARGET})
         if(targetLinkLibsPathList)
@@ -367,7 +339,11 @@ function(install_runtime installedFilePathTargetAppToResolve)
 	foreach(dir ${inst_run_DIRS} ${libPaths})
 		if(EXISTS "${dir}/bin")
 			list(APPEND inst_run_DIRS "${dir}/bin")
-        elseif(EXISTS "${dir}")
+		endif()
+		if(EXISTS "${dir}/lib")
+			list(APPEND inst_run_DIRS "${dir}/lib")
+		endif()
+        if(EXISTS "${dir}")
             list(APPEND inst_run_DIRS "${dir}")
 		endif()
 	endforeach()
@@ -416,54 +392,6 @@ function(install_runtime installedFilePathTargetAppToResolve)
 		list(REMOVE_DUPLICATES argDirs)
 	endif()
 
-
-	## Try to append as more possible paths to find dependencies (here, mainly for *.dll)
-	foreach(packageName ${inst_run_TARGET_PACKAGES})
-		if(EXISTS "${${packageName}_DIR}")
-			list(APPEND packageDirs ${${packageName}_DIR})
-			list(APPEND packageDirs ${${packageName}_DIR}/bin)
-			foreach(BUILD_TYPE_FOR_DLL ${BUILD_TYPES_FOR_DLL})
-				if(EXISTS "${${packageName}_DIR}/bin/${BUILD_TYPE_FOR_DLL}")
-					list(APPEND packageDirs "${${packageName}_DIR}/bin/${BUILD_TYPE_FOR_DLL}")
-				endif()
-				foreach(OUTPUTCONFIG ${CMAKE_CONFIGURATION_TYPES}) ## for windows multi-generator (MSVC)
-					if(EXISTS "${${packageName}_DIR}/bin/${BUILD_TYPE_FOR_DLL}/${OUTPUTCONFIG}")
-						list(APPEND packageDirs "${${packageName}_DIR}/bin/${BUILD_TYPE_FOR_DLL}/${OUTPUTCONFIG}")
-					endif()
-				endforeach()
-				if(CMAKE_BUILD_TYPE) ## for single generator (makefiles)
-					if(EXISTS "${${packageName}_DIR}/bin/${BUILD_TYPE_FOR_DLL}/${CMAKE_BUILD_TYPE}")
-						list(APPEND packageDirs "${${packageName}_DIR}/bin/${BUILD_TYPE_FOR_DLL}/${CMAKE_BUILD_TYPE}")
-					endif()
-				endif()
-			endforeach()
-			foreach(OUTPUTCONFIG ${CMAKE_CONFIGURATION_TYPES}) ## for windows multi-generator (MSVC)
-				if(EXISTS "${${packageName}_DIR}/bin/${OUTPUTCONFIG}")
-					list(APPEND packageDirs "${${packageName}_DIR}/bin/${OUTPUTCONFIG}")
-				endif()
-				foreach(BUILD_TYPE_FOR_DLL ${BUILD_TYPES_FOR_DLL})
-					if(EXISTS "${${packageName}_DIR}/bin/${OUTPUTCONFIG}/${BUILD_TYPE_FOR_DLL}")
-						list(APPEND packageDirs "${${packageName}_DIR}/bin/${OUTPUTCONFIG}/${BUILD_TYPE_FOR_DLL}")
-					endif()
-				endforeach()
-			endforeach()
-			if(CMAKE_BUILD_TYPE) ## for single generator (makefiles)
-				if(EXISTS "${${packageName}_DIR}/bin/${CMAKE_BUILD_TYPE}")
-					list(APPEND packageDirs "${${packageName}_DIR}/bin/${CMAKE_BUILD_TYPE}")
-				endif()
-				foreach(BUILD_TYPE_FOR_DLL ${BUILD_TYPES_FOR_DLL})
-					if(EXISTS "${${packageName}_DIR}/bin/${CMAKE_BUILD_TYPE}/${BUILD_TYPE_FOR_DLL}")
-						list(APPEND packageDirs "${${packageName}_DIR}/bin/${CMAKE_BUILD_TYPE}/${BUILD_TYPE_FOR_DLL}")
-					endif()
-				endforeach()
-			endif()
-		else()
-			set(${packageName}_DIR "$ENV{${packageName}_DIR}" CACHE PATH "${packageName}_DIR root directory for looking for dirs containning *.dll")
-		endif()
-	endforeach()
-	if(packageDirs)
-		list(REMOVE_DUPLICATES packageDirs)
-	endif()
 
 
 	set(dirsToLookFor "${EXEC_PATH}")

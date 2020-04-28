@@ -14,7 +14,7 @@ project(nvmToSIBR)
 add_executable(${PROJECT_NAME} main.cpp)
 
 target_link_libraries(${PROJECT_NAME}
-    ${Boost_LIBRARIES}
+    Boost::Boost
     sibr_graphics
     sibr_assets
     sibr_raycaster

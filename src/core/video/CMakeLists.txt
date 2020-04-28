@@ -19,11 +19,12 @@ add_library(${PROJECT_NAME} SHARED ${SOURCES})
 
 include_directories(${Boost_INCLUDE_DIRS})
 target_link_libraries(${PROJECT_NAME}
-	${FFMPEG_LIBRARIES}
+	ffmpeg::ffmpeg
+	opencv::ximgproc
+	opencv::optflow
 	OpenMP::OpenMP_CXX
 	sibr_graphics
 )
-
 
 
 add_definitions( -DSIBR_VIDEO_EXPORTS -DBOOST_ALL_DYN_LINK  )
