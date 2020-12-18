@@ -18,7 +18,7 @@ its *Work*.
 *Licensor* means the owners of the *Software*, i.e Inria and UCA  
 
 *Software* means the original work of authorship made available under this  
-License ie Sibr-core.  
+License ie **sibr-core**.  
 
 *Work* means the *Software* and any additions to or derivative works of the  
 *Software* that are made available under this License.  
