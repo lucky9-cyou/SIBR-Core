@@ -19,7 +19,6 @@ using namespace sibr;
 struct CameraConverterArgs : virtual AppArgs {
 	RequiredArg<std::string> input = { "input",  "input camera file" };
 	RequiredArg<std::string> output = { "output",   "output camera file" };
-	RequiredArg<std::string> colmapPath = { "colmapPath",   "path to colmap recon for camera file" };
 	Arg<std::string> transfo = { "transfo",  "", "matrix file" };
 	Arg<sibr::Vector2u> inputRes = {"ires", {1920, 1080}, "input camera resolution (not required for all formats)"};
 	Arg<sibr::Vector2u> outputRes = { "ores", {1920, 1080}, "output camera resolution (not required for all formats)" };
@@ -69,7 +68,8 @@ void save(const std::string& filename, const std::vector<InputCamera::Ptr> & cam
 
 	
 
-void colmapSave(const std::string& filename, const std::vector<InputCamera::Ptr> & xformPath, float scale, float focaly, float focalx) {
+void colmapSave(const std::string& filename, const std::vector<InputCamera::Ptr> & xformPath, 
+		float scale, float focaly, float focalx, int w, int h) {
 	// save as colmap images.txt file
 	sibr::Matrix3f converter;
 	converter << 1, 0, 0,
@@ -79,9 +79,11 @@ void colmapSave(const std::string& filename, const std::vector<InputCamera::Ptr>
 	std::ofstream outputColmapPath, outputColmapPathCams;
 	std::string colmapPathCams = parentDirectory(filename) + std::string("/cameras.txt");
 
+
 	std::cerr << std::endl;
 	std::cerr << std::endl;
 	std::cerr << "Writing colmap path to " << parentDirectory(filename) << std::endl;
+	std::cerr << "Output Resolution :" << w << "x" << h << " focal (y) " << xformPath[0]->focal() << " fx / fy " << focalx << "/" << focaly << std::endl;
 	
 	outputColmapPath.open(filename);
 	if(!outputColmapPath.good())
@@ -91,21 +93,19 @@ void colmapSave(const std::string& filename, const std::vector<InputCamera::Ptr>
 	outputColmapPathCams << "# Camera list with one line of data per camera:" << std::endl;
 	outputColmapPathCams << "#   CAMERA_ID, MODEL, WIDTH, HEIGHT, PARAMS[]" << std::endl;
 	outputColmapPathCams << "# Number of cameras: 1" << std::endl;
-	if (focalx == -1) {
-		focalx = xformPath[0]->focal();
-		SIBR_WRG << "No focal x given making it equal to focaly; use result at own risk. Should have a colmap dataset as input" << std::endl;
+	float fovx, fovy, aspect = float(w)/float(h);
+
+	if (focalx == FOCAL_X_UNDEFINED ) {
+		fovy = xformPath[0]->fovy();
+		fovx = 2.0*atan(tan(fovy*0.5*aspect));
+		std::cerr << "FOV Y " << fovy << " ASP " << aspect << " FOVX " << fovx << std::endl;
+		focalx = float(w) / 2.0*tan(0.5 * fovx);
 	}
-	else
-	{
-		std::cerr << "FX " << focalx << std::endl;
-		focalx = xformPath[0]->focal() * (focalx / focaly);
-		SIBR_WRG << "Focal x set to " << focalx<<std::endl;
-		
-	}
+
 	for(int i=0; i<xformPath.size(); i++)  {
-		outputColmapPathCams << i+1 << " PINHOLE " << xformPath[0]->w()*scale << " " << xformPath[0]->h()*scale
-			<< " " << xformPath[0]->focal()*scale << " " << focalx*scale 
-			<< " " << xformPath[0]->w()*scale * 0.5 << " " << xformPath[0]->h()*scale * 0.5 << std::endl;
+		outputColmapPathCams << i+1 << " PINHOLE " << int(float(w)*scale) << " " << int(float(h)*scale)
+			<< " " << focalx*scale << " " << focaly*scale 
+			<< " " << int(float(w)*scale) * 0.5 << " " << int(float(h)*scale) * 0.5 << std::endl;
 	}
 
 
@@ -165,20 +165,6 @@ int main(int ac, char** av) {
 	float focaly = cams[0]->focal(); // y by default
 	float focalx = cams[0]->focalx();
 
-	std::cerr << "COLMAP " << args.colmapPath << std::endl;
-	// if a path is given try and get focalx
-	std::vector<InputCamera::Ptr> camsFx;
-	if (args.colmapPath != "") {
-		std::string cm_sparse_path = args.colmapPath.get() + "/stereo/sparse";
-		if (directoryExists(cm_sparse_path)) {
-			camsFx = InputCamera::loadColmap(cm_sparse_path, 0.01, 1000, 1);
-			std::cerr << "Found " << camsFx.size() << " cameras fovx " << camsFx[0]->focalx() << std::endl;
-			focalx = camsFx[0]->focalx();
-		}
-		else
-			std::cerr << "Cant find " << cm_sparse_path << std::endl;
-	}
-
 	// Load the transformation.
 	std::ifstream transFile(args.transfo.get());
 	sibr::Matrix4f transf = sibr::Matrix4f::Identity();
@@ -214,7 +200,7 @@ int main(int ac, char** av) {
 	const std::string outExt = sibr::getExtension(args.output);
 	if (outExt == "path") {
 		save(args.output, cams);
-	} else if (outExt == "out") {
+	} else if (outExt == "out") { // bundler
 		std::vector<InputCamera::Ptr> outCams;
 		for(const auto & cam : cams) {
 			const int outH = int(args.outputRes.get()[1]);
@@ -232,11 +218,10 @@ int main(int ac, char** av) {
 			const int outW = int(std::round(cam->aspect() * float(outH)));
 			outCams.push_back(std::make_shared<InputCamera>(*cam, outW, outH));
 		}
-		//sibr::InputCamera::saveAsLookat(outCams, args.output, args.bundleImageList, args.bundleImageFiles);
 		sibr::InputCamera::saveAsLookat(outCams, args.output);
 	}
-	else if (getFileName(args.output) == "images.txt" ) {
-		colmapSave(args.output, cams, args.scale, focaly, focalx);
+	else if (getFileName(args.output) == "images.txt" ) { // colmap
+		colmapSave(args.output, cams, args.scale, focaly, focalx, args.outputRes.get()[0], args.outputRes.get()[1]);
 	} else {
 		SIBR_ERR << "Unsupported output file extension: " << outExt << "." << std::endl;
 		return EXIT_FAILURE;

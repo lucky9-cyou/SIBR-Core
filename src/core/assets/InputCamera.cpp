@@ -25,7 +25,7 @@
 namespace sibr
 {
 	InputCamera::InputCamera(float f, float k1, float k2, int w, int h, int id) :
-		_focal(f), _k1(k1), _k2(k2), _w(w), _h(h), _id(id), _active(true), _name(""), _focalx(-1)
+		_focal(f), _k1(k1), _k2(k2), _w(w), _h(h), _id(id), _active(true), _name(""), _focalx(FOCAL_X_UNDEFINED)
 	{
 		// Update fov and aspect ratio.
 		float fov = 2.0f * atan(0.5f * h / f);
@@ -64,7 +64,7 @@ namespace sibr
 		_h = h;
 
 		_focal = m(0);
-		_focalx = -1;
+		_focalx = FOCAL_X_UNDEFINED;
 		_k1 = m(1);
 		_k2 = m(2);
 
@@ -107,7 +107,7 @@ namespace sibr
 		_h = h;
 
 		_focal = focal;
-		_focalx = -1;
+		_focalx = FOCAL_X_UNDEFINED;
 		_k1 = k1;
 		_k2 = k2;
 
@@ -131,7 +131,7 @@ namespace sibr
 
 	InputCamera::InputCamera(const Camera& c, int w, int h) : Camera(c) {
 		_focal = 1.0f / (tan(0.5f * fovy()) * 2.0f / float(h));
-		_focalx = -1;
+		_focalx = FOCAL_X_UNDEFINED;
 		_k1 = _k2 = 0;
 		_w = w;
 		_h = h;

@@ -16,8 +16,12 @@
 #include "core/graphics/Camera.hpp"
 #include "core/assets/Config.hpp"
 
+
 namespace sibr
 {
+
+#define FOCAL_X_UNDEFINED (-1.0)
+
 	/** Input camera parameters. Inherits all basic camera functionality from Camera
 	*  and adds functions for depth samples from multi-view stereo.
 	*
