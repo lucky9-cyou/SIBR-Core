@@ -35,28 +35,28 @@ git_describe(GIT_BRANCH SIBR_CORE_BRANCH GIT_COMMIT_HASH SIBR_CORE_COMMIT_HASH G
 
 message(STATUS "SIBR version :\n BRANCH ${SIBR_CORE_BRANCH}\n COMMIT_HASH ${SIBR_CORE_COMMIT_HASH}\n TAG ${SIBR_CORE_TAG}\n VERSION ${SIBR_CORE_VERSION}")
 
-## Allow C++11 + other flags
+## Allow C++17 + other flags
 include(CheckCXXCompilerFlag)
 get_filename_component(currentBuildTool ${CMAKE_BUILD_TOOL} NAME_WE)	# tool that can launch the native build system. returned value may be the full path
 if(${currentBuildTool} MATCHES "(msdev|devenv|nmake|MSBuild)")
     add_definitions(/W3 /DNOMINMAX /MP -D_USE_MATH_DEFINES)# /D_ITERATOR_DEBUG_LEVEL=1 because you need all external DLl to compile with this flag too
     set(CMAKE_CONFIGURATION_TYPES "RelWithDebInfo;Release;Debug" CACHE STRING "" FORCE)
-    set(CMAKE_CXX_STANDARD 14)
+    set(CMAKE_CXX_STANDARD 17)
 	set(CMAKE_CXX_STANDARD_REQUIRED ON)
 	set(CMAKE_CXX_EXTENSIONS OFF)
 elseif(${currentBuildTool} MATCHES "(make|gmake)")
     add_definitions("-Wall -Wno-unknown-pragmas -Wno-sign-compare -g -std=c++14 -D__forceinline=\"inline\ __attribute__((always_inline))\"")
-	# CHECK_CXX_COMPILER_FLAG("-std=gnu++11" COMPILER_SUPPORTS_CXX11)
+	# CHECK_CXX_COMPILER_FLAG("-std=gnu++17" COMPILER_SUPPORTS_CXX17)
 	# CHECK_CXX_COMPILER_FLAG("-std=gnu++0x" COMPILER_SUPPORTS_CXX0X)
-	# if(COMPILER_SUPPORTS_CXX11)
-	# 	add_definitions(-std=gnu++11)
+	# if(COMPILER_SUPPORTS_CXX17)
+	# 	add_definitions(-std=gnu++17)
 	# elseif(COMPILER_SUPPORTS_CXX0X)
 	# 	add_definitions(-std=gnu++0x)
 	# else()
 	# 	message(SEND_ERROR "The compiler ${CMAKE_CXX_COMPILER} has no C++14 support. Please use a different C++ compiler.")
 	# endif()
 elseif(APPLE) ## \todo TODO: do a better test and send error on unsupported c++14 compiler
-    add_definitions(-std=c++14 -stdlib=libc++)
+    add_definitions(-std=c++17 -stdlib=libc++)
 endif()
 
 set(INSTALL_STANDALONE ON)
