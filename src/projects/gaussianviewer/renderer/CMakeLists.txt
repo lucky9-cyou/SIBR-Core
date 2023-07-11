@@ -8,11 +8,11 @@
 # For inquiries contact sibr@inria.fr and/or George.Drettakis@inria.fr
 
 set(SIBR_PROJECT "gaussian")
-project(sibr_${SIBR_PROJECT} LANGUAGES CXX)
+project(sibr_${SIBR_PROJECT} LANGUAGES CXX CUDA)
 
 sibr_gitlibrary(TARGET CudaRasterizer
     GIT_REPOSITORY 	"https://github.com/graphdeco-inria/diff-gaussian-rasterization.git"
-    GIT_TAG			"573e428645a98d74fb0d533bdbc6f174f3490e52"
+    GIT_TAG			"c369c8e9fc5e82e5f06536feaa4977716705d226"
 )
 
 find_package(CUDAToolkit REQUIRED)
@@ -42,7 +42,6 @@ target_link_libraries(${PROJECT_NAME}
 	sibr_assets
 	sibr_renderer
 	sibr_basic
-	CUDA::cudart
 	CudaRasterizer
 )
 else()
@@ -58,7 +57,6 @@ target_link_libraries(${PROJECT_NAME}
 	sibr_assets
 	sibr_renderer
 	sibr_basic
-	CUDA::cudart
 	CudaRasterizer
 )
 endif()
