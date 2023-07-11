@@ -9,7 +9,7 @@
 
 
 
-project(SIBR_gaussianViewer_app)
+project(SIBR_gaussianViewer_app LANGUAGES CXX CUDA)
 
 file(GLOB SOURCES "*.cpp" "*.h" "*.hpp")
 source_group("Source Files" FILES ${SOURCES})
@@ -33,6 +33,9 @@ target_link_libraries(${PROJECT_NAME}
 	sibr_basic
 )
 set_target_properties(${PROJECT_NAME} PROPERTIES FOLDER "projects/gaussian/apps")
+
+
+include_directories(PRIVATE ${CMAKE_CUDA_TOOLKIT_INCLUDE_DIRECTORIES})
 
 ## High level macro to install in an homogen way all our ibr targets
 include(install_runtime)
