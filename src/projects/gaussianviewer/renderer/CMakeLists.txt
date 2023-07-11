@@ -15,8 +15,6 @@ sibr_gitlibrary(TARGET CudaRasterizer
     GIT_TAG			"c369c8e9fc5e82e5f06536feaa4977716705d226"
 )
 
-find_package(CUDAToolkit REQUIRED)
-
 file(GLOB SOURCES "*.cpp" "*.h" "*.hpp")
 source_group("Source Files" FILES ${SOURCES})
 
