@@ -496,7 +496,7 @@ namespace sibr{
 
 	/** Helper class to provide, for a cv::Mat, all the information needed for OpenGL textures. */
 	template<typename ScalarType, uint N > struct GLTexFormat<cv::Mat, ScalarType, N> {
-		static_assert(std::is_same_v<ScalarType, uchar> && (N == 3 || N == 4 || N == 1) , "GLTexFormat with cv::Mat currently only defined for 3U8 or 4U8");
+		static_assert(std::is_same<ScalarType, uchar>::value && (N == 3 || N == 4 || N == 1) , "GLTexFormat with cv::Mat currently only defined for 3U8 or 4U8");
 
 		/** \copydoc GLTexFormat::flip */
 		static cv::Mat flip(const cv::Mat& img) {

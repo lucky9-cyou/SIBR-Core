@@ -1138,7 +1138,7 @@ namespace sibr
 	std::string Image<T_Type, T_NumComp>::pixelStr(const ::sibr::Vector2i & xy)  const {
 		if (isInRange(xy)) {
 			std::stringstream ss;
-//			ss << "( " << operator()(xy).cast<std::conditional<std::is_same_v<T_Type, uchar>, int, T_Type>::type>().transpose() << " )";
+//			ss << "( " << operator()(xy).cast<std::conditional<std::is_same<T_Type, uchar>::value, int, T_Type>::type>().transpose() << " )";
 std::cerr << "PIXEL STR PB" << std::endl;
 exit(1);
 			return  ss.str();

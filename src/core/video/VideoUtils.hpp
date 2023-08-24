@@ -1114,7 +1114,7 @@ namespace sibr {
 	void VideoUtils::loopAndDisplay(cv::VideoCapture & cap, float ratio, FunType f, const OtherArgsTypes &... args)
 	{
 		cv::Mat next;
-		static_assert(std::is_same_v<decltype(f(next, args...)), cv::Mat>, "FunType must return cv::Mat");
+		static_assert(std::is_same<decltype(f(next, args...)), cv::Mat>::value, "FunType must return cv::Mat");
 
 		cap.set(cv::VideoCaptureProperties::CAP_PROP_POS_FRAMES, 0);
 

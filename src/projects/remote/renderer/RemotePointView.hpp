@@ -92,7 +92,7 @@ namespace sibr {
 
 		float _scalingModifier = 1.0f;
 
-		std::atomic<bool> keep_running = true;
+		std::atomic<bool> keep_running{true};
 
 		std::string _ip;
 		int _port;

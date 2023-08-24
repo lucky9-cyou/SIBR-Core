@@ -94,7 +94,7 @@ namespace sibr
 			size_t numVids = videos.size();
 			std::vector<cv::Mat> frames(numVids);
 			for (size_t i = 0; i < numVids; ++i) {
-				if (std::is_same_v<T, uchar> && N == 3) {
+				if (std::is_same<T, uchar>::value && N == 3) {
 					frames[i] = videos[i]->getCurrentFrame();
 				} else {
 					std::vector<cv::Mat> cs;
@@ -170,7 +170,7 @@ namespace sibr
 
 			std::vector<cv::Mat> frames(numVids);
 			for (int s = 0; s < numSlices; ++s) {
-				if (std::is_same_v<T, uchar> && N == 3) {
+				if (std::is_same<T, uchar>::value && N == 3) {
 					frames[slices[s]] = videos[slices[s]]->getCurrentFrame();
 				} else {
 					std::vector<cv::Mat> cs;
