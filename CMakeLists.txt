@@ -9,6 +9,7 @@
 
 CMAKE_MINIMUM_REQUIRED(VERSION 3.22)
 
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set (CMAKE_SYSTEM_VERSION 10.0.15063.0 CACHE INTERNAL "Cmake system version" FORCE)
 PROJECT(sibr_projects)
 
@@ -192,6 +193,13 @@ if ("${SIBR_PROGRAMARGS}" STREQUAL "")
 endif()
 
 add_custom_target(PREBUILD ALL)
+
+if(USE_PATCHED_GLFW)
+    add_subdirectory(third_party/glfw)
+    set(GLFW_LIBRARIES glfw)
+else()
+    pkg_search_module(GLFW REQUIRED glfw3>=3.1)
+endif()
 
 ## Include all projects
 set(SIBR_PROJECTS_SAMPLES_SUBPAGE_REF "")
