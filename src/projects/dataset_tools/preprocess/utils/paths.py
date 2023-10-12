@@ -14,10 +14,16 @@
 import os
 
 def getBinariesPath():
-    return os.path.abspath(os.path.join(os.path.dirname(__file__), "../../bin"))
+    if os.path.exists(os.path.join(os.path.dirname(__file__), "../../bin")):
+        return os.path.abspath(os.path.join(os.path.dirname(__file__), "../../bin"))
+    else: 
+        return os.path.abspath(os.path.join(os.path.dirname(__file__), "../../../../../install/bin"))
 
 def getColmapPath():
-    return os.environ['COLMAP_PATH'] if 'COLMAP_PATH' in os.environ else "C:\\Program Files\\Colmap"
+    return os.environ['COLMAP_PATH'] if 'COLMAP_PATH' in os.environ else ("C:\\Program Files\\Colmap" if os.name == 'nt' else '')
     
 def getMeshlabPath():
-    return os.environ['MESHLAB_PATH'] if 'MESHLAB_PATH' in os.environ else "C:\\Program Files\\VCG\\Meshlab"
+    return os.environ['MESHLAB_PATH'] if 'MESHLAB_PATH' in os.environ else ("C:\\Program Files\\VCG\\Meshlab" if os.name == 'nt' else '')
+
+def getRCPath():
+    return os.environ['RC_PATH'] if 'RC_PATH' in os.environ else "C:\\Program Files\\Capturing Reality\\RealityCapture\\"

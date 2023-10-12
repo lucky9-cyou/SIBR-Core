@@ -250,7 +250,7 @@ namespace sibr {
 	void ColorMeshShader::initShader(const std::string & name, const std::string & vert, const std::string & frag, const std::string & geom)
 	{
 		ShaderAlphaMVP::initShader(name, vert, frag, geom);
-		user_color.init(shader, "user_color");
+		//user_color.init(shader, "user_color");
 	}
 
 	void ColorMeshShader::setUniforms(const Camera & eye, const MeshData & data)
@@ -602,7 +602,7 @@ namespace sibr {
 				ImGui::Checkbox(("##active_" + mesh.name).c_str(), &mesh.active);
 				ImGui::SameLine();
 				if (ImGui::Button(("OnlyMe##" + mesh.name).c_str())) {
-					for (auto & other_it = list_meshes.begin(); other_it != list_meshes.end(); ++other_it) {
+					for (auto other_it = list_meshes.begin(); other_it != list_meshes.end(); ++other_it) {
 						other_it->active = (other_it == mesh_it);
 					}
 				}
@@ -691,7 +691,7 @@ namespace sibr {
 		data.userColor = color;
 		data.depthTest = false;
 
-		return addMeshData(data);
+		return addMeshData(data).setColorMode(MeshData::USER_DEFINED);
 	}
 
 	MeshData & MultiMeshManager::getMeshData(const std::string & name)

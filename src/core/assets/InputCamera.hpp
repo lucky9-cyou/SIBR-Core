@@ -153,6 +153,9 @@ namespace sibr
 		/** \return the focal length */
 		float focal() const;
 
+		/** \return the focal length x */
+		float focalx() const;
+
 		/** set the focal length ; to be used with caution; focal is usually inferred from the fov*/
 		void setFocal(float focal) { _focal = focal; }
 
@@ -269,6 +272,8 @@ namespace sibr
 		*/
 		static std::vector<InputCamera::Ptr> loadLookat(const std::string& lookatPath, const std::vector<sibr::Vector2u>& wh= std::vector<sibr::Vector2u>(),float zNear= -1, float zFar= -1);
 
+		static std::vector<InputCamera::Ptr> InputCamera::loadTransform(const std::string& transformPath, int w, int h, std::string extension, const float zNear = 0.01f, const float zFar = 1000.0f, const int offset = 0, const int fovXfovYFlag = 0);
+
 		/** Load cameras from a Colmap txt file.
 		* \param colmapSparsePath path to the Colmap sparse directory, should contains cameras.txt and images.txt
 		* \param zNear default near-plane value to use
@@ -278,6 +283,10 @@ namespace sibr
 		* \note the camera frame is internally transformed to be consistent with fribr and RC.
 		*/
 		static std::vector<InputCamera::Ptr> loadColmap(const std::string& colmapSparsePath, const float zNear = 0.01f, const float zFar = 1000.0f, const int fovXfovYFlag = 0);
+
+		static std::vector<InputCamera::Ptr> loadColmapBin(const std::string& colmapSparsePath, const float zNear = 0.01f, const float zFar = 1000.0f, const int fovXfovYFlag = 0);
+
+		static std::vector<InputCamera::Ptr> loadJSON(const std::string& jsonPath, const float zNear = 0.01f, const float zFar = 1000.0f);
 
 		/** Load cameras from a bundle file.
 		* \param bundlerPath path to the bundle file.
@@ -307,15 +316,16 @@ namespace sibr
 		*/
 		static std::vector<InputCamera::Ptr> loadMeshroom(const std::string& meshroomSFMPath, const float zNear = 0.01f, const float zFar = 1000.0f);
 
+		uint _id; ///< Input camera id
 
 	protected:
 
 		float _focal; ///< focal length
+		float _focalx; ///< focal length x, if there is one (colmap typically; -1 by default use with caution)
 		float _k1; ///< K1 bundler distorsion parameter
 		float _k2; ///< K2 bundler dist parameter
 		uint _w; ///< Image width
 		uint _h; ///< Image height
-		uint _id; ///< Input camera id
 		std::string _name; ///< Input image name
 		bool _active; ///< is the camera currently in use.
 	};
