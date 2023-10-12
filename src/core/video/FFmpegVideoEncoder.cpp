@@ -11,6 +11,7 @@
 
 
 #include "FFmpegVideoEncoder.hpp"
+#include "core/video/Video.hpp"
 
 #ifndef HEADLESS
 extern "C"
@@ -22,6 +23,22 @@ extern "C"
 #endif
 
 #define QQ(rat) (rat.num/(double)rat.den)
+#define CALC_FFMPEG_VERSION(a,b,c) ( a<<16 | b<<8 | c )
+
+// https://github.com/FFmpeg/FFmpeg/blob/b6af56c034759b81985f8ea094e41cbd5f7fecfb/doc/APIchanges#L602-L605
+#if LIBAVFORMAT_BUILD < CALC_FFMPEG_VERSION(58, 9, 100)
+#  define CV_FFMPEG_REGISTER
+#endif
+
+// AVStream.codec deprecated in favor of AVStream.codecpar
+// https://github.com/FFmpeg/FFmpeg/blob/b6af56c034759b81985f8ea094e41cbd5f7fecfb/doc/APIchanges#L1039-L1040
+#if LIBAVFORMAT_BUILD >= CALC_FFMPEG_VERSION(59, 16, 100)
+//#if LIBAVFORMAT_BUILD >= CALC_FFMPEG_VERSION(57, 33, 100)
+#  define CV_FFMPEG_CODECPAR
+#  define CV_FFMPEG_CODEC_FIELD codecpar
+#else
+#  define CV_FFMPEG_CODEC_FIELD codec
+#endif
 
 // Disable ffmpeg deprecation warning.
 #pragma warning(disable : 4996)
@@ -43,7 +60,10 @@ namespace sibr {
 			SIBR_LOG << "[FFMPEG] Registering all." << std::endl;
 			// Ignore next line warning.
 #pragma warning(suppress : 4996)
-			av_register_all();
+#ifdef CV_FFMPEG_REGISTER
+        /* register all codecs, demux and protocols */
+        av_register_all();
+#endif
 			ffmpegInitDone = true;
 		}
 		
@@ -78,9 +98,19 @@ namespace sibr {
 			SIBR_WRG << "[FFMPEG] Can not av_write_trailer " << std::endl;
 		}
 
+
 		if (video_st) {
-			avcodec_close(video_st->codec);
+#ifdef CV_FFMPEG_CODECPAR
+			avcodec_close(pCodecCtx);
+#endif
+			video_st = nullptr;
 			av_free(frameYUV);
+		}
+
+		if (pCodecCtx) {
+#ifdef CV_FFMPEG_CODECPAR
+        avcodec_free_context(&pCodecCtx);
+#endif
 		}
 		avio_close(pFormatCtx->pb);
 		avformat_free_context(pFormatCtx);
@@ -136,7 +166,12 @@ namespace sibr {
 			return;
 		}
 
+#ifndef CV_FFMPEG_CODECPAR
 		pCodecCtx = video_st->codec;
+#else
+		pCodecCtx = avcodec_alloc_context3(pCodec);
+#endif
+
 		pCodecCtx->codec_id = fmt->video_codec;
 		pCodecCtx->codec_type = AVMEDIA_TYPE_VIDEO;
 		pCodecCtx->pix_fmt = AV_PIX_FMT_YUV420P;
@@ -229,8 +264,29 @@ namespace sibr {
 #ifndef HEADLESS
 	bool FFVideoEncoder::encode(AVFrame * frame)
 	{
-		int got_picture = 0;
+		
 
+#if LIBAVFORMAT_BUILD >= CALC_FFMPEG_VERSION(59, 16, 100)
+		int result = avcodec_send_frame(pCodecCtx, frameYUV);
+		if (result == AVERROR_EOF)
+			return true;
+		else if (result < 0)
+			return false;
+		else { 
+			pkt = av_packet_alloc();
+			if (pkt != NULL) {
+				while (avcodec_receive_packet(pCodecCtx, pkt) == 0) {
+					av_write_frame(pFormatCtx, pkt);
+					av_packet_unref(pkt);
+				}
+				av_packet_free(&pkt);
+				return true;
+			} else {
+				return false;
+			}
+		}
+#else
+		int got_picture = 0;
 		int ret = avcodec_encode_video2(pCodecCtx, pkt, frameYUV, &got_picture);
 		if (ret < 0) {
 			SIBR_WRG << "[FFMPEG] Failed to encode frame." << std::endl;
@@ -243,6 +299,7 @@ namespace sibr {
 		}
 
 		return true;
+#endif
 	}
 #endif
 

@@ -281,7 +281,6 @@ sibr_addlibrary(
 ##message("***********=============> GLFW IS " ${GLFW_LIBRARY})
 ##message("***********=============> GLFW IS " ${GLFW_LIBRARIES})
 
-find_package(glfw3 REQUIRED)
 
 sibr_gitlibrary(TARGET imgui
     GIT_REPOSITORY 	"https://gitlab.inria.fr/sibr/libs/imgui.git"
