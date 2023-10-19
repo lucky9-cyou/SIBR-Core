@@ -198,7 +198,7 @@ if(USE_PATCHED_GLFW)
     add_subdirectory(third_party/glfw)
     set(GLFW_LIBRARIES glfw)
 else()
-    pkg_search_module(GLFW REQUIRED glfw3>=3.1)
+	find_package(GLFW REQUIRED glfw3>=3.1)
 endif()
 
 ## Include all projects
